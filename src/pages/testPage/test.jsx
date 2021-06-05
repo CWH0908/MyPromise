@@ -7,6 +7,7 @@ import MyPromise_V5 from "./MyPromise/MyPromise_V5";
 import MyPromise_V6 from "./MyPromise/MyPromise_V6";
 import MyPromise_V7 from "./MyPromise/MyPromise_V7";
 import MyPromise_V8 from "./MyPromise/MyPromise_V8";
+import MyPromise_V9 from "./MyPromise/MyPromise_V9";
 
 const page = (props) => {
   // // V1 promise基础逻辑     ********************************************************************
@@ -145,19 +146,30 @@ const page = (props) => {
   //   }
   // );
 
-  // V8 补充then的空参调用 ********************************************************************
-  const v8 = new MyPromise_V8((resolve, reject) => {
-    setTimeout(() => {
-      // resolve("success");
-      reject("fail");
-    }, 1000);
-  });
-  v8.then()
-    .then()
-    .then(
-      (value) => console.log(value),
-      (reason) => console.log(reason)
-    );
+  // // V8 补充then的空参调用 ********************************************************************
+  // const v8 = new MyPromise_V8((resolve, reject) => {
+  //   setTimeout(() => {
+  //   console.log(" =========== V8 =============");
+  //     // resolve("success");
+  //     reject("fail");
+  //   }, 1000);
+  // });
+  // v8.then()
+  //   .then()
+  //   .then(
+  //     (value) => console.log(value),
+  //     (reason) => console.log(reason)
+  //   );
+
+  // V9 拓展resolve和reject的静态调用 ********************************************************************
+  MyPromise_V9.resolve()
+    .then(() => {
+      console.log(" =========== V9 =============");
+      return MyPromise_V9.resolve("success");
+    })
+    .then((res) => {
+      console.log("res:", res);
+    });
 
   return <div>cwh-dev</div>;
 };
