@@ -1,17 +1,22 @@
 {
   "name": "project001",
   "version": "0.1.0",
+  "description": "my promise",
   "private": true,
+  "main": "MyPromise_V10.js",
   "dependencies": {
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "react-scripts": "0.9.5"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "promises-aplus-tests": "^2.1.2"
+  },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "testMyPromise": "promises-aplus-tests src/pages/testPage/MyPromise/MyPromise_V10.js"
   }
 }
