@@ -68,12 +68,38 @@ class MyPromise {
       }
       // 状态失败 - 用保存的失败的原因 执行传入的失败回调
       if (this.status === REJECTED) {
-        onRejected(this.reason)
+        window.queueMicrotask(_ => {
+          try {
+            const rejectedReturn = onRejected(this.reason)
+            resolvePromise(thenPromise, rejectedReturn, resolve, reject)
+          } catch (error) {
+            reject(error)
+          }
+        })
       }
       // 调用then时处于异步pending中，将回调函数存起来
       if (this.status === PENDING) {
-        this.onFulfilledCallBack.push(onFulfilled);
-        this.onRejectedCallBack.push(onRejected);
+        this.onFulfilledCallBack.push(_ => {
+          window.queueMicrotask(_ => {
+            try {
+              const fulfilledReturn = onFulfilled(this.value);
+              resolvePromise(thenPromise, fulfilledReturn, resolve, reject);
+            } catch (error) {
+              reject(error)
+            }
+          })
+        });
+
+        this.onRejectedCallBack.push(_ => {
+          window.queueMicrotask(_ => {
+            try {
+              const rejectedReturn = onRejected(this.reason)
+              resolvePromise(thenPromise, rejectedReturn, resolve, reject)
+            } catch (error) {
+              reject(error)
+            }
+          })
+        });
       }
     })
     return thenPromise;
@@ -81,17 +107,17 @@ class MyPromise {
 }
 
 // 定义处理then回调的函数
-function resolvePromise(thenPromise, fulfilledReturn, resolve, reject) {
-  if (thenPromise === fulfilledReturn) {
+function resolvePromise(thenPromise, thenReturn, resolve, reject) {
+  if (thenPromise === thenReturn) {
     // 返回自身，循环调用，报错
     return reject(new TypeError('Chaining cycle detected for promise #<Promise>'))
   }
   // then回调返回的是新的promise
-  if (fulfilledReturn instanceof MyPromise) {
-    fulfilledReturn.then(resolve, reject)
+  if (thenReturn instanceof MyPromise) {
+    thenReturn.then(resolve, reject)
   } else {
     // then回调返回的是普通值，直接resolve
-    resolve(fulfilledReturn);
+    resolve(thenReturn);
   }
 }
 

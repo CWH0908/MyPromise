@@ -5,6 +5,7 @@ import MyPromise_V3 from "./MyPromise/MyPromise_V3";
 import MyPromise_V4 from "./MyPromise/MyPromise_V4";
 import MyPromise_V5 from "./MyPromise/MyPromise_V5";
 import MyPromise_V6 from "./MyPromise/MyPromise_V6";
+import MyPromise_V7 from "./MyPromise/MyPromise_V7";
 
 const page = (props) => {
   // // V1 promise基础逻辑     ********************************************************************
@@ -88,22 +89,60 @@ const page = (props) => {
   //   console.log("支持then的链式调用 2", value);
   // });
 
-  // V6 支持 创建promise时执行器里抛出的错误处理 ********************************************************************
-  const v6 = new MyPromise_V6((resolve, reject) => {
-    throw new Error("我在这执行报错啦!");
-    resolve("success");
-  });
+  // // V6 支持 捕获创建promise时执行器里抛出的错误和捕获then抛出的错误 ********************************************************************
+  // const v6 = new MyPromise_V6((resolve, reject) => {
+  //   // throw new Error("我在这执行报错啦!");
+  //   resolve("success");
+  // });
 
-  v6.then(
-    (value) => {
-      console.log(" =========== V6 =============");
-      console.log("resolve:", value);
-    },
-    (reason) => {
-      console.log(" =========== V6 =============");
-      console.log(reason);
-    }
-  );
+  // v6.then(
+  //   (value) => {
+  //     console.log(" =========== V6 =============");
+  //     console.log("resolve:", value);
+  //     throw new Error('then抛出错误')
+  //   },
+  //   (reason) => {
+  //     console.log(" =========== V6 =============");
+  //     console.log(reason);
+  //   }
+  // ).then(
+  //   (value) => {
+  //     console.log(" =========== V6 =============");
+  //     console.log("resolve:", value);
+  //   },
+  //   (reason) => {
+  //     console.log(" =========== V6 =============");
+  //     console.log(reason);
+  //   }
+  // );
+
+    // V7 补充fulfilled外两种状态的链式调用和捕获错误 ********************************************************************
+    const v7 = new MyPromise_V7((resolve, reject) => {
+      setTimeout(() => {
+        resolve("success");
+      }, 1000);
+    });
+  
+    v7.then(
+      (value) => {
+        console.log(" =========== V7 =============");
+        console.log("resolve:", value);
+        return 'success2'
+      },
+      (reason) => {
+        console.log(" =========== V7 =============");
+        console.log(reason);
+      }
+    ).then(
+      (value) => {
+        console.log(" =========== V7 =============");
+        console.log("resolve:", value);
+      },
+      (reason) => {
+        console.log(" =========== V7 =============");
+        console.log(reason);
+      }
+    );
   return <div>cwh-dev</div>;
 };
 
