@@ -52,7 +52,7 @@ const page = (props) => {
 
   // V4 支持then的链式调用 ********************************************************************
   const v4 = new MyPromise_V4((resolve, reject) => {
-    // setTimeout(() => { 
+    // setTimeout(() => {
     //   resolve("success");
     // }, 2000);
     resolve("success"); // 此版本由于未定义异步的 then调用，因此先使用同步
@@ -69,6 +69,23 @@ const page = (props) => {
     console.log("支持then的链式调用 2", value);
   });
 
+  // V5 支持自身调用then防循环嵌套 ********************************************************************
+  const v5 = new MyPromise_V5((resolve, reject) => {
+    // setTimeout(() => {
+    //   resolve("success");
+    // }, 2000);
+    resolve("success"); // 此版本由于未定义异步的 then调用，因此先使用同步
+  });
+
+  const v5Then = v5.then((value) => {
+    console.log(" =========== V5 =============");
+    console.log("支持then的链式调用 1", value);
+    return v5Then; // 返回自身，需要防止循环调用
+  });
+  v5Then.then((value) => {
+    console.log(" =========== V5 =============");
+    console.log("支持then的链式调用 2", value);
+  });
   return <div>cwh-dev</div>;
 };
 

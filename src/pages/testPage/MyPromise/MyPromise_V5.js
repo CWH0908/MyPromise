@@ -50,8 +50,11 @@ class MyPromise {
     const thenPromise = new Promise((resolve, rejected) => {
       // 状态成功 - 用保存的成功的返回值 执行传入的成功回调
       if (this.status === FULFILLED) {
-        const fulfilledReturn = onFulfilled(this.value);
-        resolvePromise(fulfilledReturn, resolve, rejected);
+        // 由于需要使用thenPromise，添加到微任务执行，等到thenPromise创建后再使用
+        window.queueMicrotask(_ => {
+          const fulfilledReturn = onFulfilled(this.value);
+          resolvePromise(thenPromise, fulfilledReturn, resolve, rejected);
+        })
       }
       // 状态失败 - 用保存的失败的原因 执行传入的失败回调
       if (this.status === REJECTED) {
@@ -68,10 +71,14 @@ class MyPromise {
 }
 
 // 定义处理then回调的函数
-function resolvePromise(fulfilledReturn, resolve, rejected) {
+function resolvePromise(thenPromise, fulfilledReturn, resolve, reject) {
+  if (thenPromise === fulfilledReturn) {
+    // 返回自身，循环调用，报错
+    return reject(new TypeError('Chaining cycle detected for promise #<Promise>'))
+  }
   // then回调返回的是新的promise
   if (fulfilledReturn instanceof MyPromise) {
-    fulfilledReturn.then(resolve, rejected)
+    fulfilledReturn.then(resolve, reject)
   } else {
     // then回调返回的是普通值，直接resolve
     resolve(fulfilledReturn);
