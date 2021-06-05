@@ -6,6 +6,7 @@ import MyPromise_V4 from "./MyPromise/MyPromise_V4";
 import MyPromise_V5 from "./MyPromise/MyPromise_V5";
 import MyPromise_V6 from "./MyPromise/MyPromise_V6";
 import MyPromise_V7 from "./MyPromise/MyPromise_V7";
+import MyPromise_V8 from "./MyPromise/MyPromise_V8";
 
 const page = (props) => {
   // // V1 promise基础逻辑     ********************************************************************
@@ -116,33 +117,48 @@ const page = (props) => {
   //   }
   // );
 
-    // V7 补充fulfilled外两种状态的链式调用和捕获错误 ********************************************************************
-    const v7 = new MyPromise_V7((resolve, reject) => {
-      setTimeout(() => {
-        resolve("success");
-      }, 1000);
-    });
-  
-    v7.then(
-      (value) => {
-        console.log(" =========== V7 =============");
-        console.log("resolve:", value);
-        return 'success2'
-      },
-      (reason) => {
-        console.log(" =========== V7 =============");
-        console.log(reason);
-      }
-    ).then(
-      (value) => {
-        console.log(" =========== V7 =============");
-        console.log("resolve:", value);
-      },
-      (reason) => {
-        console.log(" =========== V7 =============");
-        console.log(reason);
-      }
+  // // V7 补充fulfilled外两种状态的链式调用和捕获错误 ********************************************************************
+  // const v7 = new MyPromise_V7((resolve, reject) => {
+  //   setTimeout(() => {
+  //     resolve("success");
+  //   }, 1000);
+  // });
+
+  // v7.then(
+  //   (value) => {
+  //     console.log(" =========== V7 =============");
+  //     console.log("resolve:", value);
+  //     return 'success2'
+  //   },
+  //   (reason) => {
+  //     console.log(" =========== V7 =============");
+  //     console.log(reason);
+  //   }
+  // ).then(
+  //   (value) => {
+  //     console.log(" =========== V7 =============");
+  //     console.log("resolve:", value);
+  //   },
+  //   (reason) => {
+  //     console.log(" =========== V7 =============");
+  //     console.log(reason);
+  //   }
+  // );
+
+  // V8 补充then的空参调用 ********************************************************************
+  const v8 = new MyPromise_V8((resolve, reject) => {
+    setTimeout(() => {
+      // resolve("success");
+      reject("fail");
+    }, 1000);
+  });
+  v8.then()
+    .then()
+    .then(
+      (value) => console.log(value),
+      (reason) => console.log(reason)
     );
+
   return <div>cwh-dev</div>;
 };
 
