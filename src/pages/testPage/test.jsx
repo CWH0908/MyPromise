@@ -184,11 +184,13 @@ const page = (props) => {
 
   //  支持 promise.race ****************************************************************************************
   MyPromise_expand.race([
-    setTimeout(() => {
-      MyPromise_expand.resolve(1)
-    }, 1000),
-    MyPromise_expand.resolve(2),
-    MyPromise_expand.resolve(3),
+    new MyPromise_expand((resolve) => {
+      setTimeout(() => {
+        resolve(111);
+      }, 1000);
+    }),
+    MyPromise_expand.resolve(222),
+    MyPromise_expand.resolve(333),
     MyPromise_expand.reject("fail"),
   ]).then((res) => {
     console.log("res:", res);
