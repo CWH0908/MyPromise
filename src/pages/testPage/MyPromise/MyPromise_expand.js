@@ -65,7 +65,7 @@ class MyPromise {
           // 捕获错误
           try {
             const fulfilledReturn = onFulfilled(this.value);
-            resolvePromise(thenPromise, fulfilledReturn, resolve, reject);
+            dealThenPromise(thenPromise, fulfilledReturn, resolve, reject);
           } catch (error) {
             reject(error)
           }
@@ -77,7 +77,7 @@ class MyPromise {
         window.queueMicrotask(_ => {
           try {
             const rejectedReturn = onRejected(this.reason)
-            resolvePromise(thenPromise, rejectedReturn, resolve, reject)
+            dealThenPromise(thenPromise, rejectedReturn, resolve, reject)
           } catch (error) {
             reject(error)
           }
@@ -169,7 +169,7 @@ class MyPromise {
 }
 
 // 定义处理then回调的函数
-function resolvePromise(thenPromise, thenReturn, resolve, reject) {
+function dealThenPromise(thenPromise, thenReturn, resolve, reject) {
   if (thenPromise === thenReturn) {
     // 返回自身，循环调用，报错
     return reject(new TypeError('Chaining cycle detected for promise #<Promise>'))

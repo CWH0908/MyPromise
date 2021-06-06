@@ -58,14 +58,14 @@ class MyPromise {
       throw reason
     };
 
-    const thenPromise = new Promise((resolve, reject) => {
+    const thenPromise = new MyPromise((resolve, reject) => {
       // 处理fulfilled Task
       const _dealFulfilledTask = () => {
         queueMicrotask(_ => {
           // 捕获错误
           try {
             const fulfilledReturn = onFulfilled(this.value);
-            resolvePromise(thenPromise, fulfilledReturn, resolve, reject);
+            dealThenPromise(thenPromise, fulfilledReturn, resolve, reject);
           } catch (error) {
             reject(error)
           }
@@ -77,7 +77,7 @@ class MyPromise {
         queueMicrotask(_ => {
           try {
             const rejectedReturn = onRejected(this.reason)
-            resolvePromise(thenPromise, rejectedReturn, resolve, reject)
+            dealThenPromise(thenPromise, rejectedReturn, resolve, reject)
           } catch (error) {
             reject(error)
           }
@@ -106,9 +106,9 @@ class MyPromise {
   // 定义静态调用的resolve
   static resolve(callBack) {
     // 传入的回调就是MyPromise的实例，直接返回
-    if (callBack instanceof MyPromise) {
-      return callBack;
-    }
+    // if (callBack instanceof MyPromise) {
+    //   return callBack;
+    // }
     // 否则返回内部定义的resolve
     return new Promise(resolve => {
       resolve(callBack);
@@ -124,17 +124,77 @@ class MyPromise {
   }
 }
 
-// 定义处理then回调的函数
-function resolvePromise(thenPromise, thenReturn, resolve, reject) {
+// 定义处理then回调的函数 - 此处实现无法通过promiseA+测试
+// function dealThenPromise(thenPromise, thenReturn, resolve, reject) {
+//   if (thenPromise === thenReturn) {
+//     // 返回自身，循环调用，报错
+//     return reject(new TypeError('Chaining cycle detected for promise #<Promise>'))
+//   }
+//   // then回调返回的是新的promise
+//   if (thenReturn instanceof MyPromise) {
+//     thenReturn.then(resolve, reject)
+//   } else {
+//     // then回调返回的是普通值，直接resolve
+//     resolve(thenReturn);
+//   }
+// }
+
+function dealThenPromise(thenPromise, thenReturn, resolve, reject) {
+  // 如果相等了，说明return的是自己，抛出类型错误并返回
   if (thenPromise === thenReturn) {
-    // 返回自身，循环调用，报错
-    return reject(new TypeError('Chaining cycle detected for promise #<Promise>'))
+    return reject(new TypeError('The promise and the return value are the same'));
   }
-  // then回调返回的是新的promise
-  if (thenReturn instanceof MyPromise) {
-    thenReturn.then(resolve, reject)
+
+  if (typeof thenReturn === 'object' || typeof thenReturn === 'function') {
+    // thenReturn 为 null 直接返回，走后面的逻辑会报错
+    if (thenReturn === null) {
+      return resolve(thenReturn);
+    }
+
+    let then;
+    try {
+      // 把 thenReturn.then 赋值给 then 
+      then = thenReturn.then;
+    } catch (error) {
+      // 如果取 thenReturn.then 的值时抛出错误 error ，则以 error 为据因拒绝 promise
+      return reject(error);
+    }
+
+    // 如果 then 是函数
+    if (typeof then === 'function') {
+      let called = false;
+      try {
+        then.call(
+          thenReturn, // this 指向 thenReturn
+          // 如果 dealThenPromise 以值 y 为参数被调用，则运行 [[Resolve]](promise, y)
+          y => {
+            // dealThenPromise 均被调用，
+            // 或者被同一参数调用了多次，则优先采用首次调用并忽略剩下的调用
+            // 实现这条需要前面加一个变量 called
+            if (called) return;
+            called = true;
+            dealThenPromise(thenPromise, y, resolve, reject);
+          },
+          // 如果 rejectPromise 以据因 r 为参数被调用，则以据因 r 拒绝 promise
+          r => {
+            if (called) return;
+            called = true;
+            reject(r);
+          });
+      } catch (error) {
+        // 如果调用 then 方法抛出了异常 error：
+        // 如果 dealThenPromise 已经被调用，直接返回
+        if (called) return;
+
+        // 否则以 error 为据因拒绝 promise
+        reject(error);
+      }
+    } else {
+      // 如果 then 不是函数，以 x 为参数执行 promise
+      resolve(thenReturn);
+    }
   } else {
-    // then回调返回的是普通值，直接resolve
+    // 如果 thenReturn 不为对象或者函数，以 thenReturn 为参数执行 promise
     resolve(thenReturn);
   }
 }
