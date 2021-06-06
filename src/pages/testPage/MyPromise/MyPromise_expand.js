@@ -105,10 +105,11 @@ class MyPromise {
 
   // 定义静态调用的resolve
   static resolve(callBack) {
+    // 在promise.race过程中传入有resolve和reject的promise时，下面处理会导致resolve的返回值反而慢于reject的返回
     // 传入的回调就是MyPromise的实例，直接返回
-    if (callBack instanceof MyPromise) {
-      return callBack;
-    }
+    // if (callBack instanceof MyPromise) {
+    //   return callBack;
+    // }
     // 否则返回内部定义的resolve
     return new Promise(resolve => {
       resolve(callBack);
@@ -140,6 +141,27 @@ class MyPromise {
         }, err => {
           // 有一个执行失败，调用reject
           reject(err)
+        })
+      })
+    })
+  }
+
+  // 拓展 - race方式，传入promise数组，返回最先状态变更的数据（pending->fulfilled / pending->rejected）
+  static race(promiseArr) {
+    return new MyPromise((resolve, reject) => {
+      let flag = false; // 有无执行返回的标识
+      // 遍历，状态首先变更的返回
+      promiseArr.forEach(item => {
+        MyPromise.resolve(item).then(res => {
+          if (!flag) {
+            flag = true;
+            resolve(res)
+          }
+        }, err => {
+          if (!flag) {
+            flag = true;
+            reject(err)
+          }
         })
       })
     })
