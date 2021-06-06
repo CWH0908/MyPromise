@@ -61,7 +61,7 @@ class MyPromise {
     const thenPromise = new Promise((resolve, reject) => {
       // 处理fulfilled Task
       const _dealFulfilledTask = () => {
-        queueMicrotask(_ => {
+        window.queueMicrotask(_ => {
           // 捕获错误
           try {
             const fulfilledReturn = onFulfilled(this.value);
@@ -74,7 +74,7 @@ class MyPromise {
 
       // 处理rejected Task
       const _dealRejectedTask = () => {
-        queueMicrotask(_ => {
+        window.queueMicrotask(_ => {
           try {
             const rejectedReturn = onRejected(this.reason)
             resolvePromise(thenPromise, rejectedReturn, resolve, reject)
@@ -122,6 +122,28 @@ class MyPromise {
       reject(reason)
     })
   }
+
+  // 拓展 - all方式，传入promise数组，所有promise成功后或者有一项失败后返回
+  static all(promiseArr) {
+    let index = 0; // 用来记录完成的个数
+    let result = []; // 用来存储完成后的返回结果
+    return new MyPromise((resolve, reject) => {
+      // 逐个执行
+      promiseArr.forEach(item => {
+        MyPromise.resolve(item).then(res => {
+          index++; // 计数器+1
+          result[index] = res; // 保存返回结果
+          if (index === promiseArr.length) {
+            // 全部执行完成，返回包含所有结果的数组
+            resolve(result)
+          }
+        }, err => {
+          // 有一个执行失败，调用reject
+          reject(err)
+        })
+      })
+    })
+  }
 }
 
 // 定义处理then回调的函数
@@ -150,5 +172,4 @@ MyPromise.deferred = function () {
   return result;
 }
 
-// export default MyPromise;
-module.exports = MyPromise
+export default MyPromise;

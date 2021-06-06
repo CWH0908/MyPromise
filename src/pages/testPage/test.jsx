@@ -8,6 +8,7 @@ import MyPromise_V6 from "./MyPromise/MyPromise_V6";
 import MyPromise_V7 from "./MyPromise/MyPromise_V7";
 import MyPromise_V8 from "./MyPromise/MyPromise_V8";
 import MyPromise_V9 from "./MyPromise/MyPromise_V9";
+import MyPromise_expand from "./MyPromise/MyPromise_expand";
 
 const page = (props) => {
   // // V1 promise基础逻辑     ********************************************************************
@@ -161,17 +162,27 @@ const page = (props) => {
   //     (reason) => console.log(reason)
   //   );
 
-  // V9 拓展resolve和reject的静态调用 ********************************************************************
-  MyPromise_V9.resolve()
-    .then(() => {
-      console.log(" =========== V9 =============");
-      return MyPromise_V9.resolve("success");
-    })
-    .then((res) => {
-      console.log("res:", res);
-    });
+  // // V9 拓展resolve和reject的静态调用 ********************************************************************
+  // MyPromise_V9.resolve()
+  //   .then(() => {
+  //     console.log(" =========== V9 =============");
+  //     return MyPromise_V9.resolve("success");
+  //   })
+  //   .then((res) => {
+  //     console.log("res:", res);
+  //   });
 
-  return <div>cwh-dev</div>;
+  //  支持 promise.all ****************************************************************************************
+  MyPromise_expand.all([
+    MyPromise_expand.resolve(1),
+    MyPromise_expand.resolve(2),
+    MyPromise_expand.resolve(3),
+    MyPromise_expand.reject('fail'),
+  ]).then((res) => {
+    console.log("res:", res);
+  });
+
+  return <div>MyPromise</div>;
 };
 
 export default page;
