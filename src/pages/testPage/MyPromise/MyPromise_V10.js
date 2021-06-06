@@ -59,9 +59,8 @@ class MyPromise {
     };
 
     const thenPromise = new Promise((resolve, reject) => {
-      // 状态成功 - 用保存的成功的返回值 执行传入的成功回调
-      if (this.status === FULFILLED) {
-        // 由于需要使用thenPromise，添加到微任务执行，等到thenPromise创建后再使用
+      // 处理fulfilled Task
+      const _dealFulfilledTask = () => {
         queueMicrotask(_ => {
           // 捕获错误
           try {
@@ -72,8 +71,9 @@ class MyPromise {
           }
         })
       }
-      // 状态失败 - 用保存的失败的原因 执行传入的失败回调
-      if (this.status === REJECTED) {
+
+      // 处理rejected Task
+      const _dealRejectedTask = () => {
         queueMicrotask(_ => {
           try {
             const rejectedReturn = onRejected(this.reason)
@@ -83,29 +83,21 @@ class MyPromise {
           }
         })
       }
+
+      // 状态成功 - 用保存的成功的返回值 执行传入的成功回调
+      if (this.status === FULFILLED) {
+        // 由于需要使用thenPromise，添加到微任务执行，等到thenPromise创建后再使用
+        _dealFulfilledTask();
+      }
+      // 状态失败 - 用保存的失败的原因 执行传入的失败回调
+      if (this.status === REJECTED) {
+        _dealRejectedTask();
+      }
       // 调用then时处于异步pending中，将回调函数存起来
       if (this.status === PENDING) {
-        this.onFulfilledCallBack.push(_ => {
-          queueMicrotask(_ => {
-            try {
-              const fulfilledReturn = onFulfilled(this.value);
-              resolvePromise(thenPromise, fulfilledReturn, resolve, reject);
-            } catch (error) {
-              reject(error)
-            }
-          })
-        });
+        this.onFulfilledCallBack.push(_dealFulfilledTask);
 
-        this.onRejectedCallBack.push(_ => {
-          queueMicrotask(_ => {
-            try {
-              const rejectedReturn = onRejected(this.reason)
-              resolvePromise(thenPromise, rejectedReturn, resolve, reject)
-            } catch (error) {
-              reject(error)
-            }
-          })
-        });
+        this.onRejectedCallBack.push(_dealRejectedTask);
       }
     })
     return thenPromise;
@@ -114,11 +106,11 @@ class MyPromise {
   // 定义静态调用的resolve
   static resolve(callBack) {
     // 传入的回调就是MyPromise的实例，直接返回
-    if(callBack instanceof MyPromise){
+    if (callBack instanceof MyPromise) {
       return callBack;
     }
     // 否则返回内部定义的resolve
-    return new Promise(resolve =>{
+    return new Promise(resolve => {
       resolve(callBack);
     })
   }
@@ -146,7 +138,7 @@ function resolvePromise(thenPromise, thenReturn, resolve, reject) {
     resolve(thenReturn);
   }
 }
- 
+
 // promiseA+ 规范检测，拓展安装 cnpm install promises-aplus-tests -D
 MyPromise.deferred = function () {
   var result = {};
